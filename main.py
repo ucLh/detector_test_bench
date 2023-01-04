@@ -2,7 +2,8 @@ import cv2
 import argparse
 import numpy as np
 
-from detector import DNNWrapper
+from dnn.model import DNNWrapper
+from openvino_model.model import OpenvinoWrapper
 from utils import draw_bounding_box
 
 
@@ -19,12 +20,13 @@ def draw_bounding_box_old(img, class_id, confidence, x, y, x_plus_w, y_plus_h):
 
 # handle command line arguments
 ap = argparse.ArgumentParser()
-ap.add_argument('-i', '--image', required=False, default='dnn/dog.jpg',
+ap.add_argument('-i', '--image', required=False, default='img/persons.jpg',
                 help='path to input image')
-ap.add_argument('-c', '--config', required=False, default='dnn/yolov4-tiny.cfg',
-                help='path to yolo config file')
-ap.add_argument('-w', '--weights', required=False, default='dnn/yolov4-tiny.weights',
-                help='path to yolo pre-trained weights')
+# ap.add_argument('-c', '--config', required=False, default='dnn/yolov4-tiny.cfg',
+#                 help='path to yolo config file')
+# ap.add_argument('-w', '--weights', required=False, default='dnn/yolov4-tiny.weights',
+#                 help='path to yolo pre-trained weights')
+ap.add_argument('--model', choices=['openvino', 'dnn'], default='dnn')
 ap.add_argument('-cl', '--classes', required=False, default='dnn/classes.txt',
                 help='path to text file containing class names')
 args = ap.parse_args()
@@ -41,7 +43,10 @@ with open(args.classes, 'r') as f:
 COLORS = np.random.uniform(0, 255, size=(len(classes), 3))
 
 # read pre-trained model and config file
-net = DNNWrapper(args.weights, args.config)
+if args.model == 'openvino':
+    net = OpenvinoWrapper()
+elif args.model == 'dnn':
+    net = DNNWrapper()
 # boxes, classes, confs = net(image)
 detections = net(image)
 
@@ -51,13 +56,7 @@ for i, det in enumerate(detections):
     image = draw_bounding_box(image, det)
 
 # display output image
-# cv2.imshow("object detection", image)
-
-# wait until any key is pressed
-# cv2.waitKey()
-
-# save output image to disk
-cv2.imwrite("dnn/object-detection.jpg", image)
+cv2.imwrite("object-detection.jpg", image)
 
 # release resources
 cv2.destroyAllWindows()
