@@ -5,11 +5,12 @@ from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 
 sys.path.append('../')
 from openvino_model.config import cfg
-from detector import AbstractDetector, Detection
+from detector import AbstractTimedDetector, Detection
 
 
-class OpenvinoWrapper(AbstractDetector):
+class OpenvinoWrapper(AbstractTimedDetector):
     def __init__(self):
+        super().__init__()
         model_adapter = OpenvinoAdapter(create_core(), cfg.weights_path, device="CPU")
         self.model = SSD(model_adapter, preload=True)
 

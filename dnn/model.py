@@ -4,12 +4,13 @@ import cv2
 import numpy as np
 
 sys.path.append('../')
-from detector import AbstractDetector, Detection
+from detector import AbstractTimedDetector, Detection
 from dnn.config import cfg
 
 
-class DNNWrapper(AbstractDetector):
+class DNNWrapper(AbstractTimedDetector):
     def __init__(self):
+        super().__init__()
         self.weights_path = cfg.weights_path
         self.yolo_config = cfg.yolo_config
         self.conf_threshold = cfg.conf_threshold
@@ -19,7 +20,7 @@ class DNNWrapper(AbstractDetector):
 
     def _get_output_layers(self):
         layer_names = self.net.getLayerNames()
-        output_layers = [layer_names[i - 1] for i in self.net.getUnconnectedOutLayers()]
+        output_layers = [layer_names[i - 1] for i in self.net.getUnconnectedOutLayers().reshape(-1)]
 
         return output_layers
 
@@ -61,6 +62,7 @@ class DNNWrapper(AbstractDetector):
 
         # apply non-max suppression
         indices = cv2.dnn.NMSBoxes(boxes, confidences, self.conf_threshold, self.nms_threshold)
+        indices = indices.reshape(-1)
 
         # boxes = np.array(boxes)[indices]
         # class_ids = np.array(class_ids)[indices]

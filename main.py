@@ -47,8 +47,12 @@ if args.model == 'openvino':
     net = OpenvinoWrapper()
 elif args.model == 'dnn':
     net = DNNWrapper()
-# boxes, classes, confs = net(image)
-detections = net(image)
+
+for i in range(2):
+    detections = net(image)
+
+net.print_mean_metrics()
+print(net.metrics['time_infer'])
 
 # go through the detections remaining
 # after nms and draw bounding box
