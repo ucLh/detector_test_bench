@@ -5,13 +5,14 @@ import numpy as np
 
 
 class Detection:
-    def __init__(self, x1, y1, x2, y2, label, conf):
+    def __init__(self, x1, y1, x2, y2, label, conf, class_name):
         self.x1 = x1
         self.y1 = y1
         self.x2 = x2
         self.y2 = y2
         self.conf = conf
         self.label = label
+        self.class_name = class_name
 
     def get_coords(self):
         return self.x1, self.y1, self.x2, self.y2

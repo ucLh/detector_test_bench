@@ -6,6 +6,7 @@ import numpy as np
 sys.path.append('../')
 from detector import AbstractTimedDetector, Detection
 from dnn.config import cfg
+from utils import read_class_names
 
 
 class DNNWrapper(AbstractTimedDetector):
@@ -15,6 +16,7 @@ class DNNWrapper(AbstractTimedDetector):
         self.yolo_config = cfg.yolo_config
         self.conf_threshold = cfg.conf_threshold
         self.nms_threshold = cfg.nms_threshold
+        self.class_names = read_class_names(cfg.class_names)
         self.net = cv2.dnn.readNet(self.weights_path, self.yolo_config)
         self.output_layers = self._get_output_layers()
 
@@ -69,6 +71,6 @@ class DNNWrapper(AbstractTimedDetector):
         # confidences = np.array(confidences)[indices]
 
         for i in indices:
-            results.append(Detection(*boxes[i], class_ids[i], confidences[i]))
+            results.append(Detection(*boxes[i], class_ids[i], confidences[i], self.class_names[class_ids[i]]))
 
         return results

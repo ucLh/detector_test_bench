@@ -22,11 +22,7 @@ def draw_bounding_box_old(img, class_id, confidence, x, y, x_plus_w, y_plus_h):
 ap = argparse.ArgumentParser()
 ap.add_argument('-i', '--image', required=False, default='img/persons.jpg',
                 help='path to input image')
-# ap.add_argument('-c', '--config', required=False, default='dnn/yolov4-tiny.cfg',
-#                 help='path to yolo config file')
-# ap.add_argument('-w', '--weights', required=False, default='dnn/yolov4-tiny.weights',
-#                 help='path to yolo pre-trained weights')
-ap.add_argument('--model', choices=['openvino', 'dnn'], default='dnn')
+ap.add_argument('--model', choices=['openvino', 'dnn'], default='openvino')
 ap.add_argument('-cl', '--classes', required=False, default='dnn/classes.txt',
                 help='path to text file containing class names')
 args = ap.parse_args()
@@ -35,12 +31,8 @@ args = ap.parse_args()
 # read input image
 image = cv2.imread(args.image)
 
-# read class names from text file
-with open(args.classes, 'r') as f:
-    classes = [line.strip() for line in f.readlines()]
-
 # generate different colors for different classes
-COLORS = np.random.uniform(0, 255, size=(len(classes), 3))
+# COLORS = np.random.uniform(0, 255, size=(len(classes), 3))
 
 # read pre-trained model and config file
 if args.model == 'openvino':
@@ -49,8 +41,8 @@ elif args.model == 'dnn':
     net = DNNWrapper()
 
 for i in range(10):
-    detections, time = net(image, return_time=True)
-    print(time)
+    detections = net(image, return_time=False)
+    # print(time)
 
 net.print_mean_metrics()
 print(net.metrics['time_infer'])
