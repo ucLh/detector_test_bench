@@ -48,8 +48,9 @@ if args.model == 'openvino':
 elif args.model == 'dnn':
     net = DNNWrapper()
 
-for i in range(2):
-    detections = net(image)
+for i in range(10):
+    detections, time = net(image, return_time=True)
+    print(time)
 
 net.print_mean_metrics()
 print(net.metrics['time_infer'])

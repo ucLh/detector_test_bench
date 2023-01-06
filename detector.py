@@ -37,7 +37,7 @@ class AbstractTimedDetector:
     def postprocess(self, *args, **kwargs):
         pass
 
-    def __call__(self, x):
+    def __call__(self, x, return_time=False):
         t1 = time()
         preprocess_out = self.preprocess(x)
         t2 = time()
@@ -51,6 +51,10 @@ class AbstractTimedDetector:
         self.metrics['time_infer'].append(time_infer)
         self.metrics['time_post'].append(time_post)
         self.metrics['fps'].append(fps)
+
+        if return_time:
+            cur_time = {'time_pre': time_pre, 'time_infer': time_infer, 'time_post': time_post, 'fps': fps}
+            return final_out, cur_time
 
         return final_out
 
