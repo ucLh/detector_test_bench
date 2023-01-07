@@ -1,5 +1,6 @@
 import functools
 from time import time
+import filetype
 
 import cv2
 
@@ -12,6 +13,13 @@ def timer_func(func):
         t2 = time()
         return result, t2 - t1
     return wrap_func
+
+
+def visualise_detections(img, detections):
+    work_image = img.copy()
+    for det in detections:
+        work_image = draw_bounding_box(work_image, det)
+    return work_image
 
 
 def draw_bounding_box(img, detection_obj):
@@ -30,3 +38,10 @@ def read_class_names(class_names):
     with open(class_names, 'r') as f:
         classes = [line.strip() for line in f.readlines()]
     return classes
+
+
+def is_image(filename):
+    return filename.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp'))
+
+def is_video(filename):
+    return filename.lower().endswith(('.mp4', '.avi', '.mov', '.mkv'))
