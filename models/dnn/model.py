@@ -3,9 +3,9 @@ import sys
 import cv2
 import numpy as np
 
-sys.path.append('../')
+# sys.path.append('../')
 from detector import AbstractTimedDetector, Detection
-from dnn.config import cfg
+from .config import cfg
 from utils import read_class_names
 
 

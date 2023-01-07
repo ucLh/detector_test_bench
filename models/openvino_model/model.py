@@ -3,8 +3,8 @@ import sys
 from openvino.model_zoo.model_api.models import SSD
 from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 
-sys.path.append('../')
-from openvino_model.config import cfg
+# sys.path.append('../')
+from .config import cfg
 from detector import AbstractTimedDetector, Detection
 from utils import read_class_names
 
