@@ -20,17 +20,22 @@ def process_one_image(image, model):
     return image
 
 
+def save_image(image, image_path):
+    base_name = os.path.basename(image_path)
+    base_name_split = base_name.split('.')
+    save_path = os.path.join(args.output_dir, f'{base_name_split[0]}_{args.model}.{base_name_split[1]}')
+    cv2.imwrite(save_path, image)
+
+
 # handle command line arguments
 ap = argparse.ArgumentParser()
-ap.add_argument('-i', '--input', required=False, default='img/persons.jpg',
+ap.add_argument('-i', '--input', required=False, default='img',
                 help='path to input image')
-ap.add_argument('--model', choices=['openvino', 'dnn'], default='dnn')
+ap.add_argument('--model', choices=['openvino', 'dnn'], default='openvino',)
 ap.add_argument('-o', '--output_dir', required=False, default='output',
                 help='specify output directory if you want it saved')
 ap.add_argument('--print_time', action='store_true',
                 help='whether to print inference time')
-# ap.add_argument('-cl', '--classes', required=False, default='dnn/classes.txt',
-#                 help='path to text file containing class names')
 args = ap.parse_args()
 
 # read pre-trained model
@@ -39,20 +44,20 @@ if args.model == 'openvino':
 elif args.model == 'dnn':
     net = DNNWrapper()
 else:
-    raise ValueError('Unknown model type')
+    raise ValueError(f'Unknown model type: {args.model}')
 
 Path(args.output_dir).mkdir(parents=True, exist_ok=True)
 
-# read input image
+# read and process input
 if os.path.isfile(args.input):
+    # single image scenario
     if filetype.is_image(args.input):
         image_path = args.input
         img = cv2.imread(image_path)
         out_img = process_one_image(img, net)
-        base_name = os.path.basename(image_path)
-        save_path = os.path.join(args.output_dir, base_name)
-        cv2.imwrite(save_path, out_img)
+        save_image(out_img, image_path)
 
+    # video scenario
     elif filetype.is_video(args.input):
         cap = cv2.VideoCapture(args.input)
         frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -72,6 +77,7 @@ if os.path.isfile(args.input):
         cap.release()
         out.release()
 
+# directory with images scenario
 elif os.path.isdir(args.input):
     img_names = os.listdir(args.input)
     img_paths = map(lambda x: os.path.join(args.input, x), img_names)
@@ -79,9 +85,9 @@ elif os.path.isdir(args.input):
     for image_path in img_paths:
         img = cv2.imread(image_path)
         out_img = process_one_image(img, net)
-        base_name = os.path.basename(image_path)
-        save_path = os.path.join(args.output_dir, base_name)
-        cv2.imwrite(save_path, out_img)
+        save_image(out_img, image_path)
+
+net.print_mean_metrics()
 
 # image = cv2.imread(args.image)
 #
@@ -89,7 +95,6 @@ elif os.path.isdir(args.input):
 #     detections = net(image, return_time=False)
 #     # print(time)
 #
-net.print_mean_metrics()
 # print(net.metrics['time_infer'])
 #
 # # go through the detections remaining
