@@ -1,6 +1,5 @@
 import functools
 from time import time
-import filetype
 
 import cv2
 
@@ -38,10 +37,3 @@ def read_class_names(class_names):
     with open(class_names, 'r') as f:
         classes = [line.strip() for line in f.readlines()]
     return classes
-
-
-def is_image(filename):
-    return filename.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp'))
-
-def is_video(filename):
-    return filename.lower().endswith(('.mp4', '.avi', '.mov', '.mkv'))

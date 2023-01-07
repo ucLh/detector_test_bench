@@ -22,9 +22,9 @@ def process_one_image(image, model):
 
 # handle command line arguments
 ap = argparse.ArgumentParser()
-ap.add_argument('-i', '--input', required=False, default='videos/Double1.mp4',
+ap.add_argument('-i', '--input', required=False, default='img/persons.jpg',
                 help='path to input image')
-ap.add_argument('--model', choices=['openvino', 'dnn'], default='openvino')
+ap.add_argument('--model', choices=['openvino', 'dnn'], default='dnn')
 ap.add_argument('-o', '--output_dir', required=False, default='output',
                 help='specify output directory if you want it saved')
 ap.add_argument('--print_time', action='store_true',
@@ -64,7 +64,7 @@ if os.path.isfile(args.input):
         while cap.isOpened():
             # Capture frame-by-frame
             ret, frame = cap.read()
-            if ret == True:
+            if ret:
                 out_img = process_one_image(frame, net)
                 out.write(out_img)
             else:
@@ -89,7 +89,7 @@ elif os.path.isdir(args.input):
 #     detections = net(image, return_time=False)
 #     # print(time)
 #
-# net.print_mean_metrics()
+net.print_mean_metrics()
 # print(net.metrics['time_infer'])
 #
 # # go through the detections remaining
@@ -101,13 +101,3 @@ elif os.path.isdir(args.input):
 #
 # # release resources
 # cv2.destroyAllWindows()
-
-from contextlib import contextmanager
-
-@contextmanager
-def VideoCapture(*args, **kwargs):
-    cap = cv2.VideoCapture(*args, **kwargs)
-    try:
-        yield cap
-    finally:
-        cap.release()

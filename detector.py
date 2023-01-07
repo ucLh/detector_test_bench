@@ -1,4 +1,5 @@
 from collections import deque
+from enum import Enum
 from time import time
 
 import numpy as np
@@ -18,15 +19,22 @@ class Detection:
         return self.x1, self.y1, self.x2, self.y2
 
 
+class MetricKeys(Enum):
+    FPS = 'fps'
+    TIME_INFER = 'time_infer'
+    TIME_PRE = 'time_pre'
+    TIME_POST = 'time_post'
+
+
 class AbstractTimedDetector:
     def __init__(self):
         self.max_time_len = 10000
         self.num_warmup_runs = 1
         self.metrics = {
-            'time_pre': deque(maxlen=self.max_time_len),
-            'time_infer': deque(maxlen=self.max_time_len),
-            'time_post': deque(maxlen=self.max_time_len),
-            'fps': deque(maxlen=self.max_time_len)
+            MetricKeys.TIME_PRE: deque(maxlen=self.max_time_len),
+            MetricKeys.TIME_INFER: deque(maxlen=self.max_time_len),
+            MetricKeys.TIME_POST: deque(maxlen=self.max_time_len),
+            MetricKeys.FPS: deque(maxlen=self.max_time_len)
         }
 
     def inference(self, *args, **kwargs):
@@ -48,13 +56,13 @@ class AbstractTimedDetector:
         t4 = time()
 
         time_pre, time_infer, time_post, fps = t2 - t1, t3 - t2, t4 - t3, 1 / (t4 - t1)
-        self.metrics['time_pre'].append(time_pre)
-        self.metrics['time_infer'].append(time_infer)
-        self.metrics['time_post'].append(time_post)
-        self.metrics['fps'].append(fps)
+        self.metrics[MetricKeys.TIME_PRE].append(time_pre)
+        self.metrics[MetricKeys.TIME_INFER].append(time_infer)
+        self.metrics[MetricKeys.TIME_POST].append(time_post)
+        self.metrics[MetricKeys.FPS].append(fps)
 
         if return_time:
-            cur_time = {'time_pre': time_pre, 'time_infer': time_infer, 'time_post': time_post, 'fps': fps}
+            cur_time = {MetricKeys.TIME_PRE: time_pre, MetricKeys.TIME_INFER: time_infer, MetricKeys.TIME_POST: time_post, MetricKeys.FPS: fps}
             return final_out, cur_time
 
         return final_out
@@ -62,21 +70,25 @@ class AbstractTimedDetector:
     def get_mean_metrics(self):
         def apply_aggregator(func):
             stats = {
-                'time_pre': func(time_pre_arr),
-                'time_infer': func(time_infer_arr),
-                'time_post': func(time_post_arr),
-                'fps': func(fps_arr),
+                MetricKeys.TIME_PRE: func(time_pre_arr),
+                MetricKeys.TIME_INFER: func(time_infer_arr),
+                MetricKeys.TIME_POST: func(time_post_arr),
+                MetricKeys.FPS: func(fps_arr),
             }
             return stats
 
-        assert len(self.metrics['fps']) > self.num_warmup_runs, \
-            f'More than {self.num_warmup_runs} run required in order to get mean metrics'
+        def metrics_to_array(key):
+            # convert to array and remove first warm up measurements
+            res_arr = np.array(self.metrics[key])
+            if len(res_arr) > self.num_warmup_runs:
+                res_arr = res_arr[self.num_warmup_runs:]
+            return res_arr
 
         # convert to array and remove first measurement due to warm up
-        time_pre_arr = np.array(self.metrics['time_pre'])[1:]
-        time_infer_arr = np.array(self.metrics['time_infer'])[1:]
-        time_post_arr = np.array(self.metrics['time_post'])[1:]
-        fps_arr = np.array(self.metrics['fps'])[1:]
+        time_pre_arr = metrics_to_array(MetricKeys.TIME_PRE)
+        time_infer_arr = metrics_to_array(MetricKeys.TIME_INFER)
+        time_post_arr = metrics_to_array(MetricKeys.TIME_POST)
+        fps_arr = metrics_to_array(MetricKeys.FPS)
 
         mean_metrics = apply_aggregator(np.mean)
         median_metrics = apply_aggregator(np.median)
@@ -88,9 +100,9 @@ class AbstractTimedDetector:
         mean_metrics, median_metrics, std_metrics = self.get_mean_metrics()
 
         def format_metrics(message, metrics):
-            result_string = f"{message} | Preprocessing: {metrics['time_pre']} | " \
-                            f"Inference: {metrics['time_infer']} | Postprocessing {metrics['time_post']} | " \
-                            f"FPS: {metrics['fps']}"
+            result_string = f"{message} | Preprocessing: {metrics[MetricKeys.TIME_PRE]} | " \
+                            f"Inference: {metrics[MetricKeys.TIME_INFER]} | Postprocessing {metrics[MetricKeys.TIME_POST]} | " \
+                            f"FPS: {metrics[MetricKeys.FPS]}"
             return result_string
 
         print(format_metrics('Mean', mean_metrics))
