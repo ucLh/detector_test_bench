@@ -1,6 +1,7 @@
 import os
 import cv2
 import argparse
+import sys
 import filetype
 
 from pathlib import Path
@@ -10,25 +11,24 @@ from models.openvino_model.model import OpenvinoWrapper
 from utils import visualise_detections
 
 
-def process_one_image(image, model):
+def process_one_image(image, model, print_time):
     detections, time = model(image, return_time=True)
 
-    if args.print_time:
+    if print_time:
         print(time)
 
     image = visualise_detections(image, detections)
     return image
 
 
-def save_image(image, image_path):
+def save_image(image, image_path, output_dir, model_name):
     base_name = os.path.basename(image_path)
     base_name_split = base_name.split('.')
-    save_path = os.path.join(args.output_dir, f'{base_name_split[0]}_{args.model}.{base_name_split[1]}')
+    save_path = os.path.join(output_dir, f'{base_name_split[0]}_{model_name}.{base_name_split[1]}')
     cv2.imwrite(save_path, image)
 
 
-if __name__ == '__main__':
-    # handle command line arguments
+def parse_args(argv):
     ap = argparse.ArgumentParser()
     ap.add_argument('-i', '--input', required=False, default='assets/videos/Double1.mp4',
                     help='path to input image')
@@ -37,8 +37,10 @@ if __name__ == '__main__':
                     help='specify output directory if you want it saved')
     ap.add_argument('--print_time', action='store_true',
                     help='whether to print inference time')
-    args = ap.parse_args()
+    return ap.parse_args(argv)
 
+
+def main(args):
     # read pre-trained model
     if args.model == 'openvino':
         net = OpenvinoWrapper()
@@ -56,8 +58,8 @@ if __name__ == '__main__':
             if filetype.is_image(args.input):
                 image_path = args.input
                 img = cv2.imread(image_path)
-                out_img = process_one_image(img, net)
-                save_image(out_img, image_path)
+                out_img = process_one_image(img, net, args.print_time)
+                save_image(out_img, image_path, args.output_dir, args.model)
 
             # video scenario
             elif filetype.is_video(args.input):
@@ -67,11 +69,12 @@ if __name__ == '__main__':
                 fps = cap.get(cv2.CAP_PROP_FPS)
                 base_name = os.path.basename(args.input).split('.')[0]
                 save_path = os.path.join(args.output_dir, f'{base_name}_{args.model}.avi')
-                out = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), fps, (frame_width, frame_height))
+                out = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), fps,
+                                      (frame_width, frame_height))
                 while cap.isOpened():
                     ret, frame = cap.read()
                     if ret:
-                        out_img = process_one_image(frame, net)
+                        out_img = process_one_image(frame, net, args.print_time)
                         out.write(out_img)
                     else:
                         break
@@ -85,13 +88,17 @@ if __name__ == '__main__':
             img_paths = list(filter(lambda x: filetype.is_image(x), img_paths))
             for image_path in img_paths:
                 img = cv2.imread(image_path)
-                out_img = process_one_image(img, net)
-                save_image(out_img, image_path)
+                out_img = process_one_image(img, net, args.print_time)
+                save_image(out_img, image_path, args.output_dir, args.model)
 
         net.print_mean_metrics()
 
     else:
         raise ValueError(f'Input path `{args.input}` does not exist')
+
+
+if __name__ == '__main__':
+    main(parse_args(sys.argv[1:]))
 
 # image = cv2.imread(args.image)
 #
