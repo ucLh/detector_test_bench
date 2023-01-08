@@ -70,9 +70,8 @@ class AbstractTimedDetector:
 
         return final_out
 
-    def get_mean_metrics(self) -> (Dict[MetricKeys, float], Dict[MetricKeys, float], Dict[MetricKeys, float]):
-        # TODO: Rename to get_time_stats
-        def apply_aggregator(func):
+    def get_time_stats(self) -> (Dict[MetricKeys, float], Dict[MetricKeys, float], Dict[MetricKeys, float]):
+        def _apply_aggregator(func):
             stats = {
                 MetricKeys.TIME_PRE: func(time_pre_arr),
                 MetricKeys.TIME_INFER: func(time_infer_arr),
@@ -81,7 +80,7 @@ class AbstractTimedDetector:
             }
             return stats
 
-        def metrics_to_array(key):
+        def _metrics_to_array(key):
             # convert to array and remove first warm up measurements
             res_arr = np.array(self.metrics[key])
             if len(res_arr) > self.num_warmup_runs:
@@ -89,30 +88,29 @@ class AbstractTimedDetector:
             return res_arr
 
         # convert to array and remove first measurement due to warm up
-        time_pre_arr = metrics_to_array(MetricKeys.TIME_PRE)
-        time_infer_arr = metrics_to_array(MetricKeys.TIME_INFER)
-        time_post_arr = metrics_to_array(MetricKeys.TIME_POST)
-        fps_arr = metrics_to_array(MetricKeys.FPS)
+        time_pre_arr = _metrics_to_array(MetricKeys.TIME_PRE)
+        time_infer_arr = _metrics_to_array(MetricKeys.TIME_INFER)
+        time_post_arr = _metrics_to_array(MetricKeys.TIME_POST)
+        fps_arr = _metrics_to_array(MetricKeys.FPS)
 
-        mean_metrics = apply_aggregator(np.mean)
-        median_metrics = apply_aggregator(np.median)
-        std_metrics = apply_aggregator(np.std)
+        mean_metrics = _apply_aggregator(np.mean)
+        median_metrics = _apply_aggregator(np.median)
+        std_metrics = _apply_aggregator(np.std)
 
         return mean_metrics, median_metrics, std_metrics
 
-    def print_mean_metrics(self):
-        # TODO: Rename to print_time_stats
-        mean_metrics, median_metrics, std_metrics = self.get_mean_metrics()
+    def print_time_stats(self):
+        mean_metrics, median_metrics, std_metrics = self.get_time_stats()
 
-        def format_metrics(message, metrics):
+        def _format_metrics(message, metrics):
             result_string = f"{message} | Preprocessing: {metrics[MetricKeys.TIME_PRE]} | " \
                             f"Inference: {metrics[MetricKeys.TIME_INFER]} | Postprocessing {metrics[MetricKeys.TIME_POST]} | " \
                             f"FPS: {metrics[MetricKeys.FPS]}"
             return result_string
 
-        print(format_metrics('Mean', mean_metrics))
-        print(format_metrics('Median', median_metrics))
-        print(format_metrics('Std', std_metrics))
+        print(_format_metrics('Mean', mean_metrics))
+        print(_format_metrics('Median', median_metrics))
+        print(_format_metrics('Std', std_metrics))
 
     def get_last_inference_time(self) -> Optional[Dict[MetricKeys, deque]]:
         return self._cur_time

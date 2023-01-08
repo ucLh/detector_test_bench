@@ -96,7 +96,7 @@ def main(args: argparse.Namespace):
                 out_img = process_one_image(img, net, args.print_time)
                 save_image(out_img, image_path, args.output_dir, args.model)
 
-        net.print_mean_metrics()
+        net.print_time_stats()
 
     else:
         raise ValueError(f'Input path `{args.input}` does not exist')

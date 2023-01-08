@@ -39,7 +39,7 @@ def main(args):
             time = net.get_last_inference_time()
             print(time)
 
-    net.print_mean_metrics()
+    net.print_time_stats()
 
 
 if __name__ == '__main__':
