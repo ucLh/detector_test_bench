@@ -1,6 +1,5 @@
 from easydict import EasyDict
 
-
 cfg = EasyDict()
 cfg.weights_path = 'assets/model_files/dnn/yolov4-tiny.weights'
 cfg.yolo_config = 'assets/model_files/dnn/yolov4-tiny.cfg'

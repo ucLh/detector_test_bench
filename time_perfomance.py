@@ -3,9 +3,8 @@ import sys
 
 import cv2
 import filetype
-
-from models.openvino_model.model import OpenvinoWrapper
 from models.dnn.model import DNNWrapper
+from models.openvino_model.model import OpenvinoWrapper
 
 
 def parse_args(argv):

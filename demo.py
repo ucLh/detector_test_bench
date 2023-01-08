@@ -1,11 +1,10 @@
-import os
-import cv2
 import argparse
+import os
 import sys
-import filetype
-
 from pathlib import Path
 
+import cv2
+import filetype
 from models.dnn.model import DNNWrapper
 from models.openvino_model.model import OpenvinoWrapper
 from utils import visualise_detections

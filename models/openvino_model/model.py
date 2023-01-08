@@ -1,10 +1,9 @@
-from openvino.model_zoo.model_api.models import SSD
-from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
-
-# sys.path.append('../')
-from .config import cfg
 from models.detector import AbstractTimedDetector, Detection
+from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
+from openvino.model_zoo.model_api.models import SSD
 from utils import read_class_names
+
+from .config import cfg
 
 
 class OpenvinoWrapper(AbstractTimedDetector):

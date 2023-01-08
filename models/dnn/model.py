@@ -1,10 +1,9 @@
 import cv2
 import numpy as np
-
-# sys.path.append('../')
 from models.detector import AbstractTimedDetector, Detection
-from .config import cfg
 from utils import read_class_names
+
+from .config import cfg
 
 
 class DNNWrapper(AbstractTimedDetector):
