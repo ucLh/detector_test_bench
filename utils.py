@@ -1,8 +1,8 @@
+from typing import List
+
 import cv2
 import numpy as np
-
 from models.detector import Detection
-from typing import List
 
 
 def visualise_detections(img: np.ndarray, detections: List[Detection[int]]) -> np.ndarray:

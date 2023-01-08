@@ -10,7 +10,6 @@ from pathlib import Path
 import cv2
 import filetype
 import numpy as np
-
 from models.detector import AbstractTimedDetector
 from models.dnn.model import DNNWrapper
 from models.openvino_model.model import OpenvinoWrapper

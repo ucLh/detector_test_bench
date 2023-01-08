@@ -1,7 +1,6 @@
 from typing import Dict, List, Tuple
 
 import numpy as np
-import openvino.model_zoo.model_api.models.utils
 
 from models.detector import AbstractTimedDetector, Detection
 from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core

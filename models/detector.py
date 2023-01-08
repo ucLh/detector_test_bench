@@ -1,10 +1,11 @@
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 from collections import deque
 from enum import Enum
 from time import time
-from typing import Dict, List, Optional, TypeVar, Generic, Tuple
+from typing import Dict, Generic, List, Optional, Tuple, TypeVar
 
 import numpy as np
+
 from .config import cfg
 
 T = TypeVar('T', int, float)
