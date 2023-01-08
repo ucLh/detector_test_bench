@@ -29,13 +29,15 @@ def save_image(image, image_path, output_dir, model_name):
 
 def parse_args(argv):
     ap = argparse.ArgumentParser()
-    ap.add_argument('-i', '--input', required=False, default='assets/videos/Double1.mp4',
-                    help='path to input image')
-    ap.add_argument('--model', choices=['openvino', 'dnn'], default='dnn',)
-    ap.add_argument('-o', '--output_dir', required=False, default='output',
-                    help='specify output directory if you want it saved')
+    ap.add_argument('-i', '--input', default='assets/videos/Double1.mp4',
+                    help='Path to the input. Should be either a path to a single image, a path to a video, '
+                         'or a path to a directory with images')
+    ap.add_argument('-m', '--model', choices=['openvino', 'dnn'], default='dnn',
+                    help='Model type')
+    ap.add_argument('-o', '--output_dir', default='output',
+                    help='Specify output directory where inference results will be saved')
     ap.add_argument('--print_time', action='store_true',
-                    help='whether to print inference time')
+                    help='Whether to print inference time of each run')
     return ap.parse_args(argv)
 
 
@@ -98,21 +100,3 @@ def main(args):
 
 if __name__ == '__main__':
     main(parse_args(sys.argv[1:]))
-
-# image = cv2.imread(args.image)
-#
-# for i in range(10):
-#     detections = net(image, return_time=False)
-#     # print(time)
-#
-# print(net.metrics['time_infer'])
-#
-# # go through the detections remaining
-# # after nms and draw bounding box
-# visualise_detections(image, detections)
-#
-# # display output image
-# cv2.imwrite("object-detection.jpg", image)
-#
-# # release resources
-# cv2.destroyAllWindows()

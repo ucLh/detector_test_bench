@@ -9,13 +9,14 @@ from models.openvino_model.model import OpenvinoWrapper
 
 def parse_args(argv):
     ap = argparse.ArgumentParser()
-    ap.add_argument('-i', '--image', required=False, default='assets/img/persons.jpg',
-                    help='path to input image')
-    ap.add_argument('--model', choices=['openvino', 'dnn'], default='dnn',)
+    ap.add_argument('-i', '--image', default='assets/img/persons.jpg',
+                    help='Path to the input image')
+    ap.add_argument('--model', choices=['openvino', 'dnn'], default='dnn',
+                    help='Model type')
     ap.add_argument('--num_iters', required=False, default=1000, type=int,
-                    help='number of iterations to run')
+                    help='Number of iterations to run')
     ap.add_argument('--print_time', action='store_true',
-                    help='whether to print inference time')
+                    help='Whether to print inference time of each run')
     return ap.parse_args(argv)
 
 def main(args):
