@@ -32,13 +32,13 @@ class MetricKeys(Enum):
 
 class AbstractTimedDetector(ABC):
     def __init__(self):
-        self.max_time_len = 10000
-        self.num_warmup_runs = 1
-        self.metrics = {
-            MetricKeys.TIME_PRE: deque(maxlen=self.max_time_len),
-            MetricKeys.TIME_INFER: deque(maxlen=self.max_time_len),
-            MetricKeys.TIME_POST: deque(maxlen=self.max_time_len),
-            MetricKeys.FPS: deque(maxlen=self.max_time_len)
+        self._max_time_len = 10000
+        self._num_warmup_runs = 1
+        self._metrics = {
+            MetricKeys.TIME_PRE: deque(maxlen=self._max_time_len),
+            MetricKeys.TIME_INFER: deque(maxlen=self._max_time_len),
+            MetricKeys.TIME_POST: deque(maxlen=self._max_time_len),
+            MetricKeys.FPS: deque(maxlen=self._max_time_len)
         }
         self._cur_time: Optional[Dict[MetricKeys, deque]] = None
 
@@ -64,10 +64,10 @@ class AbstractTimedDetector(ABC):
         t4 = time()
 
         time_pre, time_infer, time_post, fps = t2 - t1, t3 - t2, t4 - t3, 1 / (t4 - t1)
-        self.metrics[MetricKeys.TIME_PRE].append(time_pre)
-        self.metrics[MetricKeys.TIME_INFER].append(time_infer)
-        self.metrics[MetricKeys.TIME_POST].append(time_post)
-        self.metrics[MetricKeys.FPS].append(fps)
+        self._metrics[MetricKeys.TIME_PRE].append(time_pre)
+        self._metrics[MetricKeys.TIME_INFER].append(time_infer)
+        self._metrics[MetricKeys.TIME_POST].append(time_post)
+        self._metrics[MetricKeys.FPS].append(fps)
 
         self._cur_time = {MetricKeys.TIME_PRE: time_pre, MetricKeys.TIME_INFER: time_infer,
                           MetricKeys.TIME_POST: time_post, MetricKeys.FPS: fps}
@@ -86,9 +86,9 @@ class AbstractTimedDetector(ABC):
 
         def _metrics_to_array(key):
             # convert to array and remove first warm up measurements
-            res_arr = np.array(self.metrics[key])
-            if len(res_arr) > self.num_warmup_runs:
-                res_arr = res_arr[self.num_warmup_runs:]
+            res_arr = np.array(self._metrics[key])
+            if len(res_arr) > self._num_warmup_runs:
+                res_arr = res_arr[self._num_warmup_runs:]
             return res_arr
 
         # convert to array and remove first measurement due to warm up
