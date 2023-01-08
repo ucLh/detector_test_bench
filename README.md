@@ -1,4 +1,4 @@
-# Simple object detector test bench
+# Simple object detection test bench
 
 Небольшой проект для сравнения пропускной способности на CPU двух моделей детекции:
 * [person-detection-0200](./models/openvino_model) - для запуска используется OpenVINO Runtime;
