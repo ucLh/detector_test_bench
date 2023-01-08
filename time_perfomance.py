@@ -20,7 +20,7 @@ def parse_args(argv):
     return ap.parse_args(argv)
 
 
-def main(args):
+def main(args: argparse.Namespace):
     if args.model == 'openvino':
         net = OpenvinoWrapper()
     elif args.model == 'dnn':

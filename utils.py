@@ -12,7 +12,7 @@ def visualise_detections(img: np.ndarray, detections: List[Detection[int]]) -> n
     return work_image
 
 
-def draw_bounding_box(img:np.ndarray, detection_obj: Detection[int]) -> np.ndarray:
+def draw_bounding_box(img: np.ndarray, detection_obj: Detection[int]) -> np.ndarray:
     box, conf, class_name = detection_obj.get_coords(), detection_obj.conf, detection_obj.class_name
     # color = COLORS[label]
     color = (255, 0, 0)

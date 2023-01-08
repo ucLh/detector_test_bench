@@ -36,5 +36,3 @@ class OpenvinoWrapper(AbstractTimedDetector):
                                      self.class_names[int(det.id)]))
 
         return results
-
-openvino.model_zoo.model_api.models.utils.Detection
