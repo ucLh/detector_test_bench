@@ -1,3 +1,4 @@
+from abc import abstractmethod, ABC
 from collections import deque
 from enum import Enum
 from time import time
@@ -29,7 +30,7 @@ class MetricKeys(Enum):
     TIME_POST = 'time_post'
 
 
-class AbstractTimedDetector:
+class AbstractTimedDetector(ABC):
     def __init__(self):
         self.max_time_len = 10000
         self.num_warmup_runs = 1
@@ -41,12 +42,15 @@ class AbstractTimedDetector:
         }
         self._cur_time: Optional[Dict[MetricKeys, deque]] = None
 
+    @abstractmethod
     def inference(self, *args, **kwargs):
         pass
 
+    @abstractmethod
     def preprocess(self, *args, **kwargs):
         pass
 
+    @abstractmethod
     def postprocess(self, *args, **kwargs) -> List[Detection]:
         pass
 
