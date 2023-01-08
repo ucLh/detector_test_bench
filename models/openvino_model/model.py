@@ -33,6 +33,7 @@ class OpenvinoWrapper(AbstractTimedDetector):
     def postprocess(self, raw_out: Dict[str, np.ndarray], input_meta: Dict[str, Tuple[int, ...]]) -> List[Detection]:
         detections = self._model.postprocess(raw_out, input_meta)
 
+        # convert to the list of Detection objects
         results = []
         for det in detections:
             results.append(Detection(det.xmin, det.ymin, det.xmax, det.ymax, int(det.id), det.score,

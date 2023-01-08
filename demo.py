@@ -68,6 +68,7 @@ def main(args: argparse.Namespace):
     else:
         raise ValueError(f'Unknown model type: {args.model}')
 
+    # create output directory if it doesn't exist
     Path(args.output_dir).mkdir(parents=True, exist_ok=True)
 
     if os.path.exists(args.input):
@@ -76,20 +77,26 @@ def main(args: argparse.Namespace):
             # single image scenario
             if filetype.is_image(args.input):
                 image_path = args.input
+                # read, process and save the image
                 img = cv2.imread(image_path)
                 out_img = process_one_image(img, net, args.print_time)
                 save_image(out_img, image_path, args.output_dir, args.model)
 
             # video scenario
             elif filetype.is_video(args.input):
+                # create input cap
                 cap = cv2.VideoCapture(args.input)
+                # read input cap parameters
                 frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
                 frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
                 fps = cap.get(cv2.CAP_PROP_FPS)
+                # prepare output save path
                 base_name = os.path.basename(args.input).split('.')[0]
                 save_path = os.path.join(args.output_dir, f'{base_name}_{args.model}.avi')
+                # create output video writer
                 out = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), fps,
                                       (frame_width, frame_height))
+                # read and process frames, save them to the output video
                 while cap.isOpened():
                     ret, frame = cap.read()
                     if ret:
@@ -102,14 +109,17 @@ def main(args: argparse.Namespace):
 
         # directory with images scenario
         elif os.path.isdir(args.input):
+            # find all the images in the directory
             img_names = os.listdir(args.input)
             img_paths = map(lambda x: os.path.join(args.input, x), img_names)
             img_paths = list(filter(lambda x: filetype.is_image(x), img_paths))
+            # process all the images
             for image_path in img_paths:
                 img = cv2.imread(image_path)
                 out_img = process_one_image(img, net, args.print_time)
                 save_image(out_img, image_path, args.output_dir, args.model)
 
+        # print out time stats in the end
         net.print_time_stats()
 
     else:

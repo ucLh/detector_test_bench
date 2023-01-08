@@ -34,12 +34,16 @@ class DNNWrapper(AbstractTimedDetector):
     def preprocess(self, image: np.ndarray) -> Tuple[int, int]:
         original_height, original_width = image.shape[:2]
         scale = 0.00392  # 1 / 255
+        # Resize the image to the input shape of the network, scale it, and convert it to a 4-dimensional blob
         blob = cv2.dnn.blobFromImage(image, scale, (416, 416), (0, 0, 0), True, crop=False)
+        # Set the input to the network
         self._net.setInput(blob)
+        # Forward the original image shape to the postprocessing step
         return original_height, original_width
 
     def inference(self, original_height: int, original_width: int) -> (List[np.ndarray], int, int):
         outs = self._net.forward(self._output_layers)
+        # Return network outputs and forward the original image shape to the postprocessing step
         return outs, original_height, original_width
 
     def postprocess(self, outs: List[np.ndarray], original_height: int, original_width: int) -> List[Detection]:
@@ -48,7 +52,9 @@ class DNNWrapper(AbstractTimedDetector):
         boxes = []
         results = []
 
-        # process box coords and filter out low confidence predictions
+        # process box coords and filter out low confidence predictions.
+        # Copied from
+        # https://github.com/opencv/opencv/blob/8c25a8eb7b10fb50cda323ee6bec68aa1a9ce43c/samples/dnn/object_detection.py#L129-L150
         for out in outs:
             for detection in out:
                 scores = detection[5:]
@@ -71,6 +77,7 @@ class DNNWrapper(AbstractTimedDetector):
         indices = cv2.dnn.NMSBoxes(boxes, confidences, self._conf_threshold, self._nms_threshold)
         indices = indices.reshape(-1)
 
+        # convert to the list of Detection objects
         for i in indices:
             results.append(Detection(*boxes[i], label=class_ids[i], conf=confidences[i],
                                      class_name=self._class_names[class_ids[i]]))

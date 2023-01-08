@@ -24,6 +24,7 @@ def parse_args(argv):
 
 
 def main(args: argparse.Namespace):
+    # read pre-trained model
     if args.model == 'openvino':
         net = OpenvinoWrapper()
     elif args.model == 'dnn':
@@ -31,17 +32,20 @@ def main(args: argparse.Namespace):
     else:
         raise ValueError(f'Unknown model type: {args.model}')
 
+    # check the input to be an image
     if filetype.is_image(args.image):
         image = cv2.imread(args.image)
     else:
         raise ValueError(f'Input `{args.input}` is not an image')
 
+    # run for the specified number of times
     for i in range(args.num_iters):
         detections = net(image)
         if args.print_time:
             time = net.get_last_inference_time()
             print(time)
 
+    # print time stats
     net.print_time_stats()
 
 

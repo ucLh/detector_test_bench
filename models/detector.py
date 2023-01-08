@@ -5,6 +5,7 @@ from time import time
 from typing import Dict, List, Optional, TypeVar, Generic, Tuple
 
 import numpy as np
+from .config import cfg
 
 T = TypeVar('T', int, float)
 
@@ -52,8 +53,8 @@ class AbstractTimedDetector(ABC):
     postprocessing steps, also measures the overall FPS.
     """
     def __init__(self):
-        self._max_time_len = 10000
-        self._num_warmup_runs = 1
+        self._max_time_len = cfg.max_time_len  # not to store too many measurements
+        self._num_warmup_runs = cfg.num_warmup_runs
         self._metrics = {
             MetricKeys.TIME_PRE: deque(maxlen=self._max_time_len),
             MetricKeys.TIME_INFER: deque(maxlen=self._max_time_len),
@@ -80,6 +81,7 @@ class AbstractTimedDetector(ABC):
         :param x: input tensor
         :return: List of detections, List[Detection]
         """
+        # Run all the steps
         t1 = time()
         preprocess_out = self.preprocess(x)
         t2 = time()
@@ -88,12 +90,14 @@ class AbstractTimedDetector(ABC):
         final_out = self.postprocess(*infer_out)
         t4 = time()
 
+        # Calculate the time spent in each step and add it to the metrics
         time_pre, time_infer, time_post, fps = t2 - t1, t3 - t2, t4 - t3, 1 / (t4 - t1)
         self._metrics[MetricKeys.TIME_PRE].append(time_pre)
         self._metrics[MetricKeys.TIME_INFER].append(time_infer)
         self._metrics[MetricKeys.TIME_POST].append(time_post)
         self._metrics[MetricKeys.FPS].append(fps)
 
+        # Save the current time so that it can be accessed later
         self._cur_time = {MetricKeys.TIME_PRE: time_pre, MetricKeys.TIME_INFER: time_infer,
                           MetricKeys.TIME_POST: time_post, MetricKeys.FPS: fps}
 
@@ -105,6 +109,7 @@ class AbstractTimedDetector(ABC):
         :return: mean, median, std of the metrics
         """
         def _apply_aggregator(func):
+            # Apply the aggregator function to each type of time measurements
             stats = {
                 MetricKeys.TIME_PRE: func(time_pre_arr),
                 MetricKeys.TIME_INFER: func(time_infer_arr),
@@ -120,7 +125,6 @@ class AbstractTimedDetector(ABC):
                 res_arr = res_arr[self._num_warmup_runs:]
             return res_arr
 
-        # convert to array and remove first measurement due to warm up
         time_pre_arr = _metrics_to_array(MetricKeys.TIME_PRE)
         time_infer_arr = _metrics_to_array(MetricKeys.TIME_INFER)
         time_post_arr = _metrics_to_array(MetricKeys.TIME_POST)
