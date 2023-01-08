@@ -10,7 +10,7 @@ class OpenvinoWrapper(AbstractTimedDetector):
     def __init__(self):
         super().__init__()
         model_adapter = OpenvinoAdapter(create_core(), cfg.weights_path, device="CPU")
-        self.model = SSD(model_adapter, preload=True)
+        self.model = SSD(model_adapter, preload=True, configuration={'confidence_threshold': cfg.conf_threshold})
         self.class_names = read_class_names(cfg.class_names)
 
     def preprocess(self, inputs):
