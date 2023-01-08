@@ -1,0 +1,5 @@
+easydict==1.9
+filetype==1.2.0
+numpy==1.21.2
+opencv_python==4.5.3.56
+openvino==2022.3.0
