@@ -12,6 +12,9 @@ from .config import cfg
 
 
 class OpenvinoWrapper(AbstractTimedDetector):
+    """
+    A wrapper for the OpenVINO person-detection-0200 model
+    """
     def __init__(self):
         super().__init__()
         model_adapter = OpenvinoAdapter(create_core(), cfg.weights_path, device="CPU")

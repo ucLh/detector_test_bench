@@ -11,6 +11,16 @@ T = TypeVar('T', int, float)
 
 class Detection(Generic[T]):
     def __init__(self, x1: T, y1: T, x2: T, y2: T, label: int, conf: float, class_name: str):
+        """
+        Class that represents a single detection
+        :param x1: x coordinate of the top left corner
+        :param y1: y coordinate of the top left corner
+        :param x2: x coordinate of the bottom right corner
+        :param y2: y coordinate of the bottom right corner
+        :param label: int label of the class
+        :param conf: confidence of the detection
+        :param class_name: string name of the class
+        """
         self.x1 = x1
         self.y1 = y1
         self.x2 = x2
@@ -20,10 +30,16 @@ class Detection(Generic[T]):
         self.class_name = class_name
 
     def get_coords(self) -> Tuple[T, T, T, T]:
+        """
+        Returns the coordinates of the bounding box
+        """
         return self.x1, self.y1, self.x2, self.y2
 
 
 class MetricKeys(Enum):
+    """
+    Enum that represents the keys for the metrics used in the AbstractTimedDetector
+    """
     FPS = 'fps'
     TIME_INFER = 'time_infer'
     TIME_PRE = 'time_pre'
@@ -31,6 +47,10 @@ class MetricKeys(Enum):
 
 
 class AbstractTimedDetector(ABC):
+    """
+    A class that represents a timed detector. It is used to measure the time spent in the preprocessing, inference and
+    postprocessing steps, also measures the overall FPS.
+    """
     def __init__(self):
         self._max_time_len = 10000
         self._num_warmup_runs = 1
@@ -55,6 +75,11 @@ class AbstractTimedDetector(ABC):
         pass
 
     def __call__(self, x) -> List[Detection]:
+        """
+        Performs the preprocessing, inference and postprocessing steps and measures the time spent in each step
+        :param x: input tensor
+        :return: List of detections, List[Detection]
+        """
         t1 = time()
         preprocess_out = self.preprocess(x)
         t2 = time()
@@ -75,6 +100,10 @@ class AbstractTimedDetector(ABC):
         return final_out
 
     def get_time_stats(self) -> (Dict[MetricKeys, float], Dict[MetricKeys, float], Dict[MetricKeys, float]):
+        """
+        Calculates mean, median and std of the metrics
+        :return: mean, median, std of the metrics
+        """
         def _apply_aggregator(func):
             stats = {
                 MetricKeys.TIME_PRE: func(time_pre_arr),
@@ -104,6 +133,9 @@ class AbstractTimedDetector(ABC):
         return mean_metrics, median_metrics, std_metrics
 
     def print_time_stats(self):
+        """
+        Formats and prints the time stats
+        """
         mean_metrics, median_metrics, std_metrics = self.get_time_stats()
 
         def _format_metrics(message, metrics):

@@ -1,3 +1,6 @@
+"""
+A simple script for evaluating model performance on the same image.
+"""
 import argparse
 import sys
 

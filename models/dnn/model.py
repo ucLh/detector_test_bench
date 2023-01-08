@@ -9,6 +9,9 @@ from .config import cfg
 
 
 class DNNWrapper(AbstractTimedDetector):
+    """
+    A wrapper for the OpenCV DNN yolov4-tiny model
+    """
     def __init__(self):
         super().__init__()
         self._weights_path = cfg.weights_path
@@ -20,6 +23,9 @@ class DNNWrapper(AbstractTimedDetector):
         self._output_layers = self._get_output_layers()  # Get output layers names from the graph once
 
     def _get_output_layers(self) -> List[str]:
+        """
+        Retrieves the names of the output layers from the network
+        """
         layer_names = self._net.getLayerNames()
         output_layers = [layer_names[i - 1] for i in self._net.getUnconnectedOutLayers().reshape(-1)]
 

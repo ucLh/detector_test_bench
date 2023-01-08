@@ -6,6 +6,12 @@ from typing import List
 
 
 def visualise_detections(img: np.ndarray, detections: List[Detection[int]]) -> np.ndarray:
+    """
+    Draw a list of detections on the input image
+    :param img: input image
+    :param detections:
+    :return: visualised image
+    """
     work_image = img.copy()
     for det in detections:
         work_image = draw_bounding_box(work_image, det)
@@ -13,8 +19,10 @@ def visualise_detections(img: np.ndarray, detections: List[Detection[int]]) -> n
 
 
 def draw_bounding_box(img: np.ndarray, detection_obj: Detection[int]) -> np.ndarray:
+    """
+    Draw a single detection on the image: bounding box, class name and confidence
+    """
     box, conf, class_name = detection_obj.get_coords(), detection_obj.conf, detection_obj.class_name
-    # color = COLORS[label]
     color = (255, 0, 0)
     x1, y1, x2, y2 = list(map(round, box))
 
@@ -24,7 +32,9 @@ def draw_bounding_box(img: np.ndarray, detection_obj: Detection[int]) -> np.ndar
 
 
 def read_class_names(class_names_path: str) -> List[str]:
-    # read class names from text file
+    """
+    Read class names from text file
+    """
     with open(class_names_path, 'r') as f:
         classes = [line.strip() for line in f.readlines()]
     return classes

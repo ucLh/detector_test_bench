@@ -1,3 +1,7 @@
+"""
+A script for visualising the detections on the images/video. Can also provide time spent on running the input
+through the model.
+"""
 import argparse
 import os
 import sys
@@ -14,6 +18,9 @@ from utils import visualise_detections
 
 
 def process_one_image(image: np.ndarray, model: AbstractTimedDetector, print_time: bool) -> np.ndarray:
+    """
+    Process one image (visualise the detections) with the given model
+    """
     detections = model(image)
 
     if print_time:
@@ -25,6 +32,13 @@ def process_one_image(image: np.ndarray, model: AbstractTimedDetector, print_tim
 
 
 def save_image(image: np.ndarray, image_path: str, output_dir: str, model_name: str):
+    """
+    Save image to the output directory
+    :param image:
+    :param image_path: original image path
+    :param output_dir:
+    :param model_name: model name in [openvino, dnn], used to construct the output file name
+    """
     base_name = os.path.basename(image_path)
     base_name_split = base_name.split('.')
     save_path = os.path.join(output_dir, f'{base_name_split[0]}_{model_name}.{base_name_split[1]}')
