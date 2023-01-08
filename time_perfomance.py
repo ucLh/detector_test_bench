@@ -19,6 +19,7 @@ def parse_args(argv):
                     help='Whether to print inference time of each run')
     return ap.parse_args(argv)
 
+
 def main(args):
     if args.model == 'openvino':
         net = OpenvinoWrapper()
@@ -33,8 +34,9 @@ def main(args):
         raise ValueError(f'Input `{args.input}` is not an image')
 
     for i in range(args.num_iters):
-        detections, time = net(image, return_time=True)
+        detections = net(image)
         if args.print_time:
+            time = net.get_last_inference_time()
             print(time)
 
     net.print_mean_metrics()

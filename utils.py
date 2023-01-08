@@ -1,27 +1,18 @@
-import functools
-from time import time
-
 import cv2
+import numpy as np
+
+from models.detector import Detection
+from typing import List
 
 
-def timer_func(func):
-    @functools.wraps(func)
-    def wrap_func(*args, **kwargs):
-        t1 = time()
-        result = func(*args, **kwargs)
-        t2 = time()
-        return result, t2 - t1
-    return wrap_func
-
-
-def visualise_detections(img, detections):
+def visualise_detections(img: np.ndarray, detections: List[Detection[int]]) -> np.ndarray:
     work_image = img.copy()
     for det in detections:
         work_image = draw_bounding_box(work_image, det)
     return work_image
 
 
-def draw_bounding_box(img, detection_obj):
+def draw_bounding_box(img:np.ndarray, detection_obj: Detection[int]) -> np.ndarray:
     box, conf, class_name = detection_obj.get_coords(), detection_obj.conf, detection_obj.class_name
     # color = COLORS[label]
     color = (255, 0, 0)
@@ -32,8 +23,8 @@ def draw_bounding_box(img, detection_obj):
     return img
 
 
-def read_class_names(class_names):
+def read_class_names(class_names_path: str) -> List[str]:
     # read class names from text file
-    with open(class_names, 'r') as f:
+    with open(class_names_path, 'r') as f:
         classes = [line.strip() for line in f.readlines()]
     return classes

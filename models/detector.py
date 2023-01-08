@@ -1,12 +1,15 @@
 from collections import deque
 from enum import Enum
 from time import time
+from typing import Dict, List, Optional, TypeVar, Generic, Tuple
 
 import numpy as np
 
+T = TypeVar('T', int, float)
 
-class Detection:
-    def __init__(self, x1, y1, x2, y2, label, conf, class_name):
+
+class Detection(Generic[T]):
+    def __init__(self, x1: T, y1: T, x2: T, y2: T, label: int, conf: float, class_name: str):
         self.x1 = x1
         self.y1 = y1
         self.x2 = x2
@@ -15,7 +18,7 @@ class Detection:
         self.label = label
         self.class_name = class_name
 
-    def get_coords(self):
+    def get_coords(self) -> Tuple[T, T, T, T]:
         return self.x1, self.y1, self.x2, self.y2
 
 
@@ -36,6 +39,7 @@ class AbstractTimedDetector:
             MetricKeys.TIME_POST: deque(maxlen=self.max_time_len),
             MetricKeys.FPS: deque(maxlen=self.max_time_len)
         }
+        self._cur_time: Optional[Dict[MetricKeys, deque]] = None
 
     def inference(self, *args, **kwargs):
         pass
@@ -43,10 +47,10 @@ class AbstractTimedDetector:
     def preprocess(self, *args, **kwargs):
         pass
 
-    def postprocess(self, *args, **kwargs):
+    def postprocess(self, *args, **kwargs) -> List[Detection]:
         pass
 
-    def __call__(self, x, return_time=False):
+    def __call__(self, x) -> List[Detection]:
         t1 = time()
         preprocess_out = self.preprocess(x)
         t2 = time()
@@ -61,13 +65,13 @@ class AbstractTimedDetector:
         self.metrics[MetricKeys.TIME_POST].append(time_post)
         self.metrics[MetricKeys.FPS].append(fps)
 
-        if return_time:
-            cur_time = {MetricKeys.TIME_PRE: time_pre, MetricKeys.TIME_INFER: time_infer, MetricKeys.TIME_POST: time_post, MetricKeys.FPS: fps}
-            return final_out, cur_time
+        self._cur_time = {MetricKeys.TIME_PRE: time_pre, MetricKeys.TIME_INFER: time_infer,
+                          MetricKeys.TIME_POST: time_post, MetricKeys.FPS: fps}
 
         return final_out
 
-    def get_mean_metrics(self):
+    def get_mean_metrics(self) -> (Dict[MetricKeys, float], Dict[MetricKeys, float], Dict[MetricKeys, float]):
+        # TODO: Rename to get_time_stats
         def apply_aggregator(func):
             stats = {
                 MetricKeys.TIME_PRE: func(time_pre_arr),
@@ -97,6 +101,7 @@ class AbstractTimedDetector:
         return mean_metrics, median_metrics, std_metrics
 
     def print_mean_metrics(self):
+        # TODO: Rename to print_time_stats
         mean_metrics, median_metrics, std_metrics = self.get_mean_metrics()
 
         def format_metrics(message, metrics):
@@ -108,3 +113,6 @@ class AbstractTimedDetector:
         print(format_metrics('Mean', mean_metrics))
         print(format_metrics('Median', median_metrics))
         print(format_metrics('Std', std_metrics))
+
+    def get_last_inference_time(self) -> Optional[Dict[MetricKeys, deque]]:
+        return self._cur_time

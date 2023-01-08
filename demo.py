@@ -5,22 +5,26 @@ from pathlib import Path
 
 import cv2
 import filetype
+import numpy as np
+
+from models.detector import AbstractTimedDetector
 from models.dnn.model import DNNWrapper
 from models.openvino_model.model import OpenvinoWrapper
 from utils import visualise_detections
 
 
-def process_one_image(image, model, print_time):
-    detections, time = model(image, return_time=True)
+def process_one_image(image: np.ndarray, model: AbstractTimedDetector, print_time: bool) -> np.ndarray:
+    detections = model(image)
 
     if print_time:
+        time = model.get_last_inference_time()
         print(time)
 
     image = visualise_detections(image, detections)
     return image
 
 
-def save_image(image, image_path, output_dir, model_name):
+def save_image(image: np.ndarray, image_path: str, output_dir: str, model_name: str):
     base_name = os.path.basename(image_path)
     base_name_split = base_name.split('.')
     save_path = os.path.join(output_dir, f'{base_name_split[0]}_{model_name}.{base_name_split[1]}')
@@ -29,7 +33,7 @@ def save_image(image, image_path, output_dir, model_name):
 
 def parse_args(argv):
     ap = argparse.ArgumentParser()
-    ap.add_argument('-i', '--input', default='assets/videos/Double1.mp4',
+    ap.add_argument('-i', '--input', default='assets/img',
                     help='Path to the input. Should be either a path to a single image, a path to a video, '
                          'or a path to a directory with images')
     ap.add_argument('-m', '--model', choices=['openvino', 'dnn'], default='dnn',
@@ -41,7 +45,7 @@ def parse_args(argv):
     return ap.parse_args(argv)
 
 
-def main(args):
+def main(args: argparse.Namespace):
     # read pre-trained model
     if args.model == 'openvino':
         net = OpenvinoWrapper()

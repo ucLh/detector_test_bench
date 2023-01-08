@@ -1,3 +1,8 @@
+from typing import Dict, List, Tuple
+
+import numpy as np
+import openvino.model_zoo.model_api.models.utils
+
 from models.detector import AbstractTimedDetector, Detection
 from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_zoo.model_api.models import SSD
@@ -13,14 +18,16 @@ class OpenvinoWrapper(AbstractTimedDetector):
         self.model = SSD(model_adapter, preload=True, configuration={'confidence_threshold': cfg.conf_threshold})
         self.class_names = read_class_names(cfg.class_names)
 
-    def preprocess(self, inputs):
+    def preprocess(self, inputs: np.ndarray) -> (Dict[str, np.ndarray], Dict[str, Tuple[int, ...]]):
         dict_data, input_meta = self.model.preprocess(inputs)
         return dict_data, input_meta
 
-    def inference(self, dict_data, input_meta):
-        return self.model.infer_sync(dict_data), input_meta
+    def inference(self, dict_data: Dict[str, np.ndarray], input_meta: Dict[str, Tuple[int, ...]]) -> \
+            (Dict[str, np.ndarray], Dict[str, Tuple[int, ...]]):
+        out = self.model.infer_sync(dict_data)
+        return out, input_meta
 
-    def postprocess(self, raw_out, input_meta):
+    def postprocess(self, raw_out: Dict[str, np.ndarray], input_meta: Dict[str, Tuple[int, ...]]) -> List[Detection]:
         detections = self.model.postprocess(raw_out, input_meta)
 
         results = []
@@ -29,3 +36,5 @@ class OpenvinoWrapper(AbstractTimedDetector):
                                      self.class_names[int(det.id)]))
 
         return results
+
+openvino.model_zoo.model_api.models.utils.Detection
